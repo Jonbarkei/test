@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="script.js"></script>
+  <title>Photo Website</title>
+</head>
+<body>
+  <header>
+    <h1>Photo Gallery</h1>
+  </header>
+  <main>
+    <div class="photo" onclick="openPhoto('photo1.jpg', 'John Doe')">
+      <img src="photo1.jpg" alt="Photo 1">
+      <div class="overlay">
+        <button class="like-button">Like</button>
+        <button class="dislike-button">Dislike</button>
+      </div>
+    </div>
+    <!-- Add more photo elements here -->
+  </main>
+  <footer>
+    &copy; 2023 Photo Website
+  </footer>
+</body>
+</html>
