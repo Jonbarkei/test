@@ -1,147 +1,59 @@
-class App extends React.Component {
-	constructor() {
-		super()
-		this.state = {
-			data: [],
-			activeID: 0,
-			imageView: false
-		}
-	}
-	componentWillMount() {
-		this._loadData('https://s3-us-west-2.amazonaws.com/s.cdpn.io/735173/rpg-2-data.json')
-	}
-	componentWillUnmount() {
-			this._loadData.abort()
-		}
-		// Fetch data, then clone it to state using destructuring
-		// XHR Fallback
-	_loadData(url) {
-		fetch(url, {
-				method: 'GET'
-			})
-			.then(response => response.json())
-			.then(json => this.setState({
-				data: [...json.gallery]
-			}))
-			.catch((err) => {
-				console.log(err.message)
-				try {
-					const xhr = new XMLHttpRequest()
-					xhr.open('GET', url)
-					xhr.responseType = 'json'
+const galleryItem = document.getElementsByClassName("gallery-item");
+const lightBoxContainer = document.createElement("div");
+const lightBoxContent = document.createElement("div");
+const lightBoxImg = document.createElement("img");
+const lightBoxPrev = document.createElement("div");
+const lightBoxNext = document.createElement("div");
 
-					xhr.onload = () => {
-						let json = xhr.response
-						this.setState({
-							data: [...json.gallery]
-						})
-					}
+lightBoxContainer.classList.add("lightbox");
+lightBoxContent.classList.add("lightbox-content");
+lightBoxPrev.classList.add("fa", "fa-angle-left", "lightbox-prev");
+lightBoxNext.classList.add("fa", "fa-angle-right", "lightbox-next");
 
-					xhr.onerror = () => {
-						throw new Error('XMLHttpRequest Failed...')
-					}
+lightBoxContainer.appendChild(lightBoxContent);
+lightBoxContent.appendChild(lightBoxImg);
+lightBoxContent.appendChild(lightBoxPrev);
+lightBoxContent.appendChild(lightBoxNext);
 
-					xhr.send()
-				} catch (e) {
-					console.log(e.message)
-				}
-			})
-	}
-	_openImageView(id) {
-		this.setState({
-			activeID: id,
-			imageView: true
-		});
-	}
-	_closeImageView() {
-		this.setState({
-			imageView: false
-		})
-	}
-	render() {
-		return (
-			<div className="wrapper">
-				{
-					this.state.imageView ? 
-					<ImageView {...this.state.data[this.state.activeID]}
-						_closeImageView={this._closeImageView.bind(this)} />
-						:
-					<Gallery data={this.state.data}
-						_openImageView={this._openImageView.bind(this)} />
-				}
-			</div>
-		)
-	}
+document.body.appendChild(lightBoxContainer);
+
+let index = 1;
+
+function showLightBox(n) {
+    if (n > galleryItem.length) {
+        index = 1;
+    } else if (n < 1) {
+        index = galleryItem.length;
+    }
+    let imageLocation = galleryItem[index-1].children[0].getAttribute("src");
+    lightBoxImg.setAttribute("src", imageLocation);
 }
 
-class ImageView extends React.Component {
-	render() {
-		return (
-			<div className="imageview-wrapper fadeIn">
-				<div className="imageview">
-					<Image CSSClass="imageview-image"
-						src={this.props.src}
-						alt={this.props.name} />
-					<div className="imageview-info">
-						<button className="imageview-close" onClick={this.props._closeImageView}>x</button>
-						<h2>{this.props.name}</h2>
-						<p>{this.props.desc}</p>
-						<h3>Tags</h3>
-						<ul>
-							{this.props.tags.map(tag => <li>{tag}</li>)}
-						</ul>
-					</div>
-			</div>
-		</div>
-		)
-	}
+function currentImage() {
+    lightBoxContainer.style.display = "block";
+
+    let imageIndex = parseInt(this.getAttribute("data-index"));
+    showLightBox(index = imageIndex);
+}
+for (let i = 0; i < galleryItem.length; i++) {
+    galleryItem[i].addEventListener("click", currentImage);
 }
 
-class Gallery extends React.Component {
-	render() {
-		return (
-			<div className="gallery fadeIn">
-			{
-				this.props.data.map( data => 
-					<Tile key={data.id}
-						id={data.id}
-						src={data.src}				
-						name={data.name}
-						desc={data.desc}
-						_openImageView={this.props._openImageView} />
-				)
-			}
-	</div>
-		)
-	}
+function slideImage(n) {
+    showLightBox(index += n);
 }
-
-class Tile extends React.Component {
-	_handleClick() {
-		this.props._openImageView(this.props.id)
-	}
-	render() {
-		return (
-			<div className="gallery-tile" onClick={this._handleClick.bind(this)}>
-			<div className="picture-info">
-				<h2>{this.props.name}</h2>
-				{/*<p>{this.props.desc}</p>*/}
-			</div>
-			<Image
-				CSSClass="tile-image"
-				src={this.props.src} 
-				alt={this.props.name} />
-		</div>
-		)
-	}
+function prevImage() {
+    slideImage(-1);
 }
+function nextImage() {
+    slideImage(1);
+}
+lightBoxPrev.addEventListener("click", prevImage);
+lightBoxNext.addEventListener("click", nextImage);
 
-const Image = (props) => (
-	<img
-		className={props.CSSClass}
-		src={props.src} 
-		alt={props.name} />
-)
-
-// Render app
-ReactDOM.render(<App />, document.getElementById('app'))
+function closeLightBox() {
+    if (this === event.target) {
+        lightBoxContainer.style.display = "none";
+    }
+}
+lightBoxContainer.addEventListener("click", closeLightBox);
